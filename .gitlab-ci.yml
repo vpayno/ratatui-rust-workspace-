@@ -1,0 +1,156 @@
+---
+#
+# .gitlab-ci.yml
+#
+stages:
+  - lint
+  - test
+  - build
+  - publish
+
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main" || ($CI_PIPELINE_SOURCE == 'merge_request_event' && ( $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ))
+
+variables:
+  RUST_BACKTRACE: "FULL"
+
+cache:  # Setup a cache to cache job parts between jobs to ensure faster builds
+  key: "$CI_JOB_NAME"
+  untracked: true
+  paths:
+    - $HOME/.cargo/
+    - target/
+
+.rust_job_template:
+  image: rust
+  allow_failure: false
+  rules:
+    - changes:
+        - ./Cargo.toml
+        - ./Cargo.lock
+        - ./src
+        - ./tests
+  before_script:
+    - rustc --version && cargo --version
+
+rust-tests-and-coverage:
+  extends: .rust_job_template
+  stage: test
+  script:
+    - apt update
+    - apt install -y lcov  # --install-suggests
+    - cargo install --locked cargo-llvm-cov
+    - cargo llvm-cov clean --workspace
+    - cargo build
+    - cargo test --verbose
+    - cargo llvm-cov --no-clean
+    - cargo llvm-cov report --cobertura --output-path coverage.xml
+    - cargo llvm-cov report --lcov --output-path lcov.info
+    - lcov --list lcov.info
+    - lcov --summary lcov.info |& tee coverage.txt
+  coverage: '/.*lines......: (\d+\.\d+)%.*$/'
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    when: always
+    expire_in: 2 weeks
+    paths:
+      - coverage.txt
+      - coverage.xml
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+rust-lint-code:
+  extends: .rust_job_template
+  stage: lint
+  script:
+    - rustup component add clippy
+    - cargo clippy --future-incompat-report -- -D warnings
+
+rust-audit-code:
+  extends: .rust_job_template
+  stage: test
+  dependencies:
+    - rust-lint-code
+  allow_failure: true
+  script:
+    - cargo install --locked cargo-audit
+    - cargo audit
+
+rust-format-code:
+  extends: .rust_job_template
+  stage: lint
+  allow_failure: true
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+rust-spellcheck:
+  extends: .rust_job_template
+  stage: lint
+  dependencies:
+    - rust-lint-code
+  script:
+    - apt update
+    - apt install -y llvm clang clang libclang-dev build-essential libssl-dev
+    - LIBCLANG_PATH="$(llvm-config --prefix)/lib" cargo install --locked cargo-spellcheck
+    - cargo spellcheck check
+
+rust-outdated:
+  extends: .rust_job_template
+  stage: test
+  allow_failure: true
+  script:
+    - cargo install --locked cargo-outdated
+    - cargo outdated
+
+rust-build:amd64:
+  extends: .rust_job_template
+  stage: build
+  dependencies:
+    - rust-tests-and-coverage
+  script:
+    - cargo build --release
+  artifacts:
+    paths:
+      - target/release/web-project
+
+rustdoc:
+  extends: .rust_job_template
+  stage: build
+  script:
+    - cargo doc
+  artifacts:
+    paths:
+      - target/doc
+
+pages:
+  stage: publish
+  image: alpine
+  dependencies:
+    - rust-build:amd64
+    - rustdoc
+  script:
+    - mkdir -pv public
+    - mv -v target/doc public/doc
+    - mv -v target/release/web-project
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
+# You can override the included template(s) by including variable overrides
+# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
+# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
+# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
+# Container Scanning customization: https://docs.gitlab.com/ee/user/application_security/container_scanning/#customizing-the-container-scanning-settings
+# Note that environment variables can be set in several places
+# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+sast:
+  stage: test
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
