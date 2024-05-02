@@ -33,6 +33,7 @@ cache:  # Setup a cache to cache job parts between jobs to ensure faster builds
         - ./tests
   before_script:
     - rustc --version && cargo --version
+    - ./.github/citools/debian-install-deps.sh
 
 rust-tests-and-coverage:
   extends: .rust_job_template
