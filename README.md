@@ -8,6 +8,18 @@ Personal workspace for learning Dioxus & Rust.
 - [Dioxus Website](https://dioxuslabs.com/)
 - [Rust](https://www.rust-lang.org/)
 
+## [RunMe Playbook](https://runme.dev)
+
+This and other readme files in this repo are RunMe Plabooks.
+
+Use this playbook step/task to update the RunMe cli.
+
+If you don't have runme installed, you'll need to copy/paste the command. :)
+
+```bash { background=false category=runme closeTerminalOnSuccess=true excludeFromRunAll=true interactive=true interpreter=bash name=setup-install-runme promptEnv=true terminalRows=10 }
+go install github.com/stateful/runme/v3@v3
+```
+
 ## Installing Tools
 
 - Install [Dioxus CLI](https://github.com/DioxusLabs/dioxus/tree/main/packages/cli)
