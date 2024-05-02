@@ -30,6 +30,7 @@ jobs:
           apt update
           apt install -y xz-utils liblzma-dev zstd libzstd-dev bzip2 libbz2-dev bzip3 libbzip3-dev zip unzip gzip
           apt install -y curl libcurl4-openssl-dev wget
+          apt install -y sudo
       - name: git checkout
         uses: actions/checkout@v4
       - name: Install LLVM and Clang
