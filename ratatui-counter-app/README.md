@@ -59,6 +59,7 @@ stty cols "${COLUMNS:-80}"
 printf "PWD: %s\n" "${PWD}"
 printf "\n"
 
+reset
 cargo run
 ```
 

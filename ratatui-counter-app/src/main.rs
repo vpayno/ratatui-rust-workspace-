@@ -57,11 +57,17 @@ impl App {
     }
 
     fn increment_counter(&mut self) {
-        self.counter += 1;
+        match self.counter {
+            255 => self.counter = 0,
+            _ => self.counter += 1,
+        }
     }
 
     fn decrement_counter(&mut self) {
-        self.counter -= 1;
+        match self.counter {
+            0 => self.counter = 255,
+            _ => self.counter -= 1,
+        }
     }
 }
 
