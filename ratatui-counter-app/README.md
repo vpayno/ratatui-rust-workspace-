@@ -46,6 +46,7 @@ printf "\n"
 
 cargo add ratatui
 cargo add crossterm
+cargo add color-eyre
 ```
 
 Run the project.
