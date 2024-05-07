@@ -8,6 +8,12 @@ use ratatui::{
 
 use crate::app::{App, CurrentScreen, CurrentlyEditing};
 
+macro_rules! styled_span {
+    ($label:tt, $color:expr) => {
+        Span::styled($label, Style::default().fg($color))
+    };
+}
+
 pub fn ui(f: &mut Frame, app: &App) {
     enum LayoutChunks {
         Header = 0,
@@ -80,30 +86,30 @@ pub fn ui(f: &mut Frame, app: &App) {
     let current_navigation_text = vec![
         // the first half of the text
         match app.current_screen {
-            CurrentScreen::Main => Span::styled("Normal Mode", Style::default().fg(Color::Green)),
+            CurrentScreen::Main => styled_span!("Normal Mode", Color::Green),
             CurrentScreen::Editing => {
-                Span::styled("Editing Mode", Style::default().fg(Color::Yellow))
+                styled_span!("Editing Mode", Color::Yellow)
             }
             CurrentScreen::Exiting => {
-                Span::styled("Exiting Mode", Style::default().fg(Color::LightRed))
+                styled_span!("Exiting Mode", Color::LightRed)
             }
         }
         .to_owned(),
         // a white divider bar to separate the two sections
-        Span::styled(" | ", Style::default().fg(Color::White)),
+        styled_span!(" | ", Color::White),
         // the final section of the text, with hings on what the user is editing
         {
             if let Some(editing) = &app.currently_editing {
                 match editing {
                     CurrentlyEditing::Key => {
-                        Span::styled("Editing Json Key", Style::default().fg(Color::Green))
+                        styled_span!("Editing Json Key", Color::Green)
                     }
                     CurrentlyEditing::Value => {
-                        Span::styled("Editing Json Value", Style::default().fg(Color::LightGreen))
+                        styled_span!("Editing Json Value", Color::LightGreen)
                     }
                 }
             } else {
-                Span::styled("Not Editing Anything", Style::default().fg(Color::DarkGray))
+                styled_span!("Not Editing Json Anything", Color::DarkGray)
             }
         },
     ];
@@ -113,18 +119,14 @@ pub fn ui(f: &mut Frame, app: &App) {
 
     let current_keys_hint = {
         match app.current_screen {
-            CurrentScreen::Main => Span::styled(
-                "(q) to quit / (e) to make new pair",
-                Style::default().fg(Color::Red),
+            CurrentScreen::Main => styled_span!("(q) to quit / (e) to make new pair", Color::Red),
+            CurrentScreen::Editing => styled_span!(
+                "(ESC) to cancel / (Tab) to switch boxes/enter to complete",
+                Color::Red
             ),
-            CurrentScreen::Editing => Span::styled(
-                "(ESC) to cancel/(Tab) to switch boxes/enter to complete",
-                Style::default().fg(Color::Red),
-            ),
-            CurrentScreen::Exiting => Span::styled(
-                "(q) to quit / (e) to make new pair",
-                Style::default().fg(Color::Red),
-            ),
+            CurrentScreen::Exiting => {
+                styled_span!("(q) to quit / (e) to make new pair", Color::Red)
+            }
         }
     };
 
