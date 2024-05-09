@@ -7,6 +7,8 @@ Simple counter app.
 Use [bacon](https://github.com/Canop/bacon) to watch the project.
 
 ```bash { background=false category=setup closeTerminalOnSuccess=true excludeFromRunAll=true interactive=true interpreter=bash name=counter-app-watch promptEnv=true terminalRows=20 }
+# run bacon
+
 set -e
 
 stty rows "${LINES:-25}"
@@ -32,6 +34,8 @@ bacon ${subcommand}
 Add project dependencies.
 
 ```bash { background=false category=setup closeTerminalOnSuccess=true excludeFromRunAll=true interactive=true interpreter=bash name=counter-app-add-deps promptEnv=true terminalRows=20 }
+# install/update debian and cargo deps
+
 set -e
 
 stty rows "${LINES:-25}"
@@ -52,6 +56,8 @@ cargo add color-eyre
 Run the project.
 
 ```bash { background=false category=setup closeTerminalOnSuccess=true excludeFromRunAll=true interactive=true interpreter=bash name=counter-app-run promptEnv=true terminalRows=20 }
+# run the project
+
 set -e
 
 stty rows "${LINES:-25}"
