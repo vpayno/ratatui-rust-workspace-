@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["hello-ratatui", "counter-app", "json-editor"]
+members = ["hello-ratatui", "counter-app", "json-editor", "async-counter-app"]
