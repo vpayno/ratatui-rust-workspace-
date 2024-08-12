@@ -30,7 +30,7 @@ impl App {
     }
 
     fn render_frame(&self, frame: &mut Frame) {
-        frame.render_widget(self, frame.size());
+        frame.render_widget(self, frame.area());
     }
 
     /// updates the application's state based on user input
@@ -94,7 +94,7 @@ impl Widget for &App {
             .title(
                 instructions
                     .alignment(Alignment::Center)
-                    .position(Position::Bottom),
+                    .position(ratatui::widgets::block::Position::Bottom),
             )
             .borders(Borders::ALL)
             .border_set(border::THICK);
